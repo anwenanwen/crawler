@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>图片爬虫前端页面</title>
+    <style>
+        /* 这里添加CSS样式，可以根据需要自定义 */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f2f2f2;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #fff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            text-align: center;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 10px;
+            font-size: 16px;
+        }
+
+        .button-group {
+            text-align: center;
+        }
+
+        .button-group button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        .image-gallery {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .image-gallery img {
+            max-width: 200px;
+            max-height: 200px;
+            margin: 10px;
+            cursor: pointer;
+        }
+
+        .image-preview {
+            max-width: 100%;
+            max-height: 500px;
+            margin-top: 20px;
+        }
+
+        .database-button {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .database-button button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>图片爬虫前端页面</h1>
+        <div class="input-group">
+            <label for="keyword">请输入关键字：</label>
+            <input type="text" id="keyword" placeholder="请输入关键字">
+        </div>
+        <div class="button-group">
+            <button onclick="startCrawling()">开始爬取</button>
+        </div>
+        <div id="status" style="margin-top: 20px;"></div>
+        <div class="image-gallery" id="image-gallery"></div>
+        <div class="database-button">
+            <button onclick="viewDatabase()">查看数据库</button>
+        </div>
+        <div id="database-view"></div>
+    </div>
+    <script>
+function startCrawling() {
+    // 获取用户输入的关键字
+    var keyword = $('#keyword').val();
+    if (!keyword) {
+        alert('请输入关键字！');
+        return;
+    }
+
+    // 显示加载状态
+    $('#status').text('正在爬取图片，请稍候...');
+    $('#image-gallery').empty(); // 清空图片画廊
+
+     $.ajax({
+        url: '/download', // 修改为与后端一致的路由
+        type: 'POST',
+        contentType: 'application/json', // 指定发送的数据类型为JSON
+        data: JSON.stringify({ keyword: keyword }), // 将数据转换为JSON字符串
+        success: function(response) {
+            // ... [省略其它代码] ...
+        },
+        error: function(xhr, status, error) {
+            // ... [省略其它代码] ...
+        }
+    });
+}
+function viewDatabase() {
+    // 发送AJAX请求到后端获取数据库中的图片信息
+    $.ajax({
+        url: '/get_database_images', // 假设你的后端接口是/get_database_images
+        type: 'GET',
+        success: function(response) {
+            // 假设后端返回的是一个包含数据库中图片信息的数组或对象
+            $('#database-view').empty(); // 清空数据库视图
+            if (response && response.length > 0) {
+                var databaseView = $('#database-view');
+                response.forEach(function(imageInfo) {
+                    var imgElement = $('<img>').attr('src', imageInfo.url).addClass('image-preview');
+                    var infoElement = $('<div>').text('标题：' + imageInfo.title + '，描述：' + imageInfo.description);
+                    var container = $('<div>').append(imgElement).append(infoElement);
+                    databaseView.append(container);
+                });
+            } else {
+                $('#database-view').text('数据库中没有图片信息。');
+            }
+        },
+        error: function(xhr, status, error) {
+            $('#database-view').text('获取数据库图片信息失败：' + error);
+        }
+    });
+}
+</script>
